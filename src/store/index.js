@@ -4,6 +4,7 @@ import authReducer from './auth'
 import usersReducer from './users'
 import sectorReducer from './sector'
 import questionReducer from './question'
+import strategyReducer from './strategy'
 
 export default configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export default configureStore({
         auth: authReducer,
         users: usersReducer,
         sector: sectorReducer,
-        question: questionReducer
+        question: questionReducer,
+        strategy: strategyReducer
     }
 })

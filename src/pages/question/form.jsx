@@ -76,7 +76,7 @@ const Form = () => {
 
     const getQuestion = React.useCallback(() => {
         if (id) {
-            http.get(`/api/question/${id}`).then((res) => setForm({...res.data, difficulty_level: res.data?.difficulty_level?._id}));
+            http.get(`/api/question/${id}`).then((res) => setForm({ ...res.data, difficulty_level: res.data?.difficulty_level?._id }));
         }
     }, [id]);
 
@@ -87,9 +87,9 @@ const Form = () => {
         getQuestion();
     }, [getSectors, getLevels, getLanguage, getQuestion]);
 
-    const handleChange = (e, v) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+    // const handleChange = (e, v) => {
+    //     setForm({ ...form, [e.target.name]: e.target.value });
+    // };
 
     const handleQuestionChange = (v, i, name) => {
         let f = { ...form };
@@ -99,7 +99,7 @@ const Form = () => {
 
     const handleQuestionOptionChange = (v, i, name, oi) => {
         let f = { ...form };
-        f.question[i][name][oi] = v;
+        f.question[i][name][oi]['content'] = v;
         setForm(f);
     };
 
@@ -123,9 +123,10 @@ const Form = () => {
                 if (!d.some(obj => obj.lang === q.slug)) {
                     d.push({
                         lang: q.slug,
-                        content: '',
-                        description: '',
-                        options: ['', '', '', '']
+                        content: "",
+                        image: "/upload.png",
+                        description: "",
+                        options: [{ image: "/upload.png", content: "" }, { image: "/upload.png", content: "" }, { image: "/upload.png", content: "" }, { image: "/upload.png", content: "" }]
                     });
                 }
             }
@@ -153,12 +154,13 @@ const Form = () => {
 
     const onSubmit = (event) => {
         event.preventDefault();
-        // const f = new FormData(event.currentTarget);
-        var data = { ...form };
-        data['sector'] = form?.sector?._id;
-        data['jobrole'] = form?.jobrole?._id;
-        data['nos'] = form?.nos?._id;
-        data['language'] = form?.language?.map((v)=> v._id);
+        const data = new FormData(event.currentTarget);
+        // var data = { ...form };
+        data.set('sector', form?.sector?._id);
+        data.set('jobrole', form?.jobrole?._id);
+        data.set('nos', form?.nos?._id);
+        data.set('language', form?.language?.map((v) => v._id));
+        data.set('question', JSON.stringify(form.question));
         if (form?._id) {
             http.put(`/api/question/${form?._id}`, data).then((res) => {
                 dispatch(OPEN_SNACKBAR({ message: 'Question Update Successfully.' }));
@@ -238,6 +240,7 @@ const Form = () => {
                                 <Select
                                     labelId="pc"
                                     id="pc"
+                                    name="pc"
                                     value={form?.pc}
                                     onChange={(e) => setForm({ ...form, pc: e.target.value })}
                                     label="PC"
@@ -245,7 +248,7 @@ const Form = () => {
                                     <MenuItem value="">
                                         <em>None</em>
                                     </MenuItem>
-                                    {(form.nos !=='' && Object.keys(form.nos).length > 0) && [...Array(form?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx+1}>{idx+1}</MenuItem>)}
+                                    {(form.nos !== '' && Object.keys(form.nos).length > 0) && [...Array(form?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -255,6 +258,7 @@ const Form = () => {
                                 <Select
                                     labelId="difficulty_level"
                                     id="difficulty_level"
+                                    name="difficulty_level"
                                     value={form?.difficulty_level}
                                     onChange={(e) => setForm({ ...form, difficulty_level: e.target.value })}
                                     label="Difficulty Level"
@@ -272,6 +276,7 @@ const Form = () => {
                                 <Select
                                     labelId="type"
                                     id="type"
+                                    name="type"
                                     value={form?.type}
                                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                                     label="Question type"
@@ -302,7 +307,7 @@ const Form = () => {
                                 onChange={(e, v, r) => handleChangeName(v, 'language', r)}
                             />
                         </Grid>
-                        
+
                         {form?.question?.length > 0 && <Grid item xs={12} md={12} mb={3}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <Tabs value={tabvalue} onChange={(e, v) => setTabValue(v)} aria-label="basic tabs example" variant="scrollable" scrollButtons
@@ -325,28 +330,42 @@ const Form = () => {
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={12} mb={3}>
-                                        <TextField
-                                            id={`question-${q.lang}`}
-                                            name={`question[${qi}][lang]`}
-                                            label={`${getLanguageTitle(q.lang)} Question`}
-                                            fullWidth
-                                            multiline
-                                            rows={4}
-                                            value={q?.content || ''}
-                                            onChange={(e) => handleQuestionChange(e.target.value, qi, 'content')}
-                                        />
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} md={9} mb={3}>
+                                                <TextField
+                                                    id={`question-${q.lang}`}
+                                                    name={`question[${qi}][lang]`}
+                                                    label={`${getLanguageTitle(q.lang)} Question`}
+                                                    fullWidth
+                                                    multiline
+                                                    rows={4}
+                                                    value={q?.content || ''}
+                                                    onChange={(e) => handleQuestionChange(e.target.value, qi, 'content')}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} md={3} mb={3}>
+                                                <img src={q?.image || ''} style={{ height: 125 }} />
+                                            </Grid>
+                                        </Grid>
                                     </Grid>
                                     {q.options.length > 0 && q.options.map((o, oi) => <Grid key={oi} item xs={12} md={12} mb={3}>
-                                        <TextField
-                                            id={`options-${q.lang}`}
-                                            name={`question[${qi}][options][${oi}]`}
-                                            label={`${getLanguageTitle(q.lang)} Option ${oi + 1}`}
-                                            fullWidth
-                                            multiline
-                                            rows={2}
-                                            value={o || ''}
-                                            onChange={(e) => handleQuestionOptionChange(e.target.value, qi, 'options', oi)}
-                                        />
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} md={9} mb={3}>
+                                                <TextField
+                                                    id={`options-${q.lang}`}
+                                                    name={`question[${qi}][options][${oi}][content]`}
+                                                    label={`${getLanguageTitle(q.lang)} Option ${oi + 1}`}
+                                                    fullWidth
+                                                    multiline
+                                                    rows={2}
+                                                    value={o.content || ''}
+                                                    onChange={(e) => handleQuestionOptionChange(e.target.value, qi, 'options', oi)}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} md={3} mb={3}>
+                                                <img src={o?.image || ''} style={{ height: 79 }} />
+                                            </Grid>
+                                        </Grid>
                                     </Grid>)}
                                 </Grid>
                             </TabPanel>)}

@@ -8,7 +8,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import http from "../../utils/http";
 import { ValidatorForm } from 'react-material-ui-form-validator';
 import AutocompleteValidator from '../../components/AutocompleteValidator';
-import UploadValidator from '../../components/UploadValidator';
 
 const Input = styled('input')({
     display: 'none',
@@ -52,24 +51,23 @@ const Import = () => {
     };
 
     const onSubmit = (event) => {
-        console.log(event);
-        // event.preventDefault();
-        // setErrors({});
-        // const f = new FormData(event.currentTarget);
-        // http.post('/api/question/import', f, {
-        //     headers: {
-        //         'Content-Type': 'multipart/form-data'
-        //     },
-        //     onUploadProgress: event => {
-        //         let percentCompleted = Math.round((100 * event.loaded) / event.total)
-        //         console.log('completed: ', percentCompleted)
-        //     }
-        // }).then((res) => {
-        //     dispatch(OPEN_SNACKBAR({ message: 'Question uploaded successfully!' }));
-        //     navigate('/question');
-        // }).catch((err) => {
-        //     setErrors(err.response?.data?.errors || {});
-        // });
+        event.preventDefault();
+        setErrors({});
+        const f = new FormData(event.target);
+        http.post('/api/question/import', f, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: event => {
+                let percentCompleted = Math.round((100 * event.loaded) / event.total)
+                console.log('completed: ', percentCompleted)
+            }
+        }).then((res) => {
+            dispatch(OPEN_SNACKBAR({ message: 'Question uploaded successfully!' }));
+            navigate('/question');
+        }).catch((err) => {
+            setErrors(err.response?.data?.errors || {});
+        });
     };
 
     return <React.Fragment>
@@ -117,7 +115,6 @@ const Import = () => {
                         <input name="jobrole" value={form?.jobrole?._id || ''} onChange={(e) => console.log('')} type="hidden" />
                     </Grid>
                     <Grid item md={4} xs={12} mb={3}>
-                        {/* <UploadValidator className='flex justify-end' name='file' id="contained-button-file" onChange={onChnage} type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/> */}
                         <label htmlFor="contained-button-file" className='flex justify-end'>
                             <Input name='file' id="contained-button-file" onChange={onChnage} type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
                             <Button color='success' variant="contained" component="span">
@@ -133,7 +130,7 @@ const Import = () => {
                     </Grid>
                 </Grid>
                 <Box className='mt-4 flex'>
-                    <Link to="/question_sample.xlsx" target="_blank" className='mr-1' download><a className='font-semibold'>Click here</a></Link> to download sample question excel file format.
+                    <Link to="/question_sample.xlsx" target="_blank" className='mr-1 font-semibold' download>Click here</Link> to download sample question excel file format.
                 </Box>
             </ValidatorForm>
         </Paper>

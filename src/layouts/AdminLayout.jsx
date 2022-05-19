@@ -110,6 +110,7 @@ const AdminLayout = () => {
             "/profile": "Profile",
             "/question/import": "Import Question",
             "/question/add": "Add New Question",
+            "/strategy/add": "Add New Strategy",
         };
         if (routelist[location.pathname])
             return routelist[location.pathname];
@@ -129,6 +130,8 @@ const AdminLayout = () => {
             return 'Edit Mail Template';
         if (/(\/question\/+[a-zA-Z0-9]+\/edit)/gm.test(location.pathname))
             return 'Edit Question';
+        if (/(\/strategy\/+[a-zA-Z0-9]+\/edit)/gm.test(location.pathname))
+            return 'Edit Strategy';
         let str = location.pathname.replace(/^\/+/, '');
         return str.charAt(0).toUpperCase() + str.slice(1);
     }

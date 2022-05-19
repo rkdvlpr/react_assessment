@@ -39,6 +39,8 @@ import DifficultyLevel from "./pages/difficulty_level";
 import Question from "./pages/question";
 import QuestionForm from "./pages/question/form";
 import QuestionImport from "./pages/question/import";
+import Strategy from "./pages/strategy";
+import StrategyForm from "./pages/strategy/form";
 import Blank from "./pages/blank";
 
 const token = localStorage.getItem("token");
@@ -119,6 +121,9 @@ function App() {
             <Route path="/question/import" element={<QuestionImport />} />
             <Route path="/question/add" element={<QuestionForm />} />
             <Route path="/question/:id/edit" element={<QuestionForm />} />
+            <Route path="/strategy" element={<Strategy />} />
+            <Route path="/strategy/add" element={<StrategyForm />} />
+            <Route path="/strategy/:id/edit" element={<StrategyForm />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="*" element={<NotFound />} />
