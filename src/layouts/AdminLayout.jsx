@@ -132,6 +132,10 @@ const AdminLayout = () => {
             return 'Edit Question';
         if (/(\/strategy\/+[a-zA-Z0-9]+\/edit)/gm.test(location.pathname))
             return 'Edit Strategy';
+        if (/(\/strategy\/+[a-zA-Z0-9]+\/generate)/gm.test(location.pathname))
+            return 'Generate Assessment Sets';
+        if (/(\/strategy\/+[a-zA-Z0-9]+\/detail)/gm.test(location.pathname))
+            return 'Strategy Detail';
         let str = location.pathname.replace(/^\/+/, '');
         return str.charAt(0).toUpperCase() + str.slice(1);
     }

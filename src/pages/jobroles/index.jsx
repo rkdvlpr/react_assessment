@@ -115,15 +115,30 @@ const Jobrole = () => {
                                 <TableRow>
                                     <TableCell component="th">Nos ID</TableCell>
                                     <TableCell component="th">Description</TableCell>
-                                    <TableCell component="th">PC</TableCell>
+                                    <TableCell component="th">Element Details</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {view?.nos?.length > 0 && view?.nos?.map((nos, idx) => (
-                                    <TableRow>
+                                    <TableRow key={idx}>
                                         <TableCell>{nos.name}</TableCell>
                                         <TableCell>{nos.description}</TableCell>
-                                        <TableCell>{nos.pc}</TableCell>
+                                        <TableCell>
+                                            {nos.elements.length > 0 && <Table aria-label="simple table">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell component="th">Name</TableCell>
+                                                        <TableCell component="th">PC</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {nos.elements.map((el, ei) => <TableRow key={ei}>
+                                                        <TableCell>{el.name}</TableCell>
+                                                        <TableCell>{el.pc}</TableCell>
+                                                    </TableRow>)}
+                                                </TableBody>
+                                            </Table>}
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

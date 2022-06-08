@@ -22,7 +22,11 @@ const Form = () => {
         if (id) {
             http.get(`/api/jobrole/${id}`).then((res) => {
                 setForm({ _id: res.data?._id, name: res.data?.name, code: res.data?.code, level: res.data?.level, duration: res.data?.duration, sector: res.data?.sector });
-                setNos(res.data.nos);
+                let nos = res.data.nos.map((v) => {
+                    var elno = v.elements ? v.elements.length : 0;
+                    return { ...v, elements_no: elno };
+                });
+                setNos(nos);
             });
         }
     }, [id]);
@@ -34,7 +38,19 @@ const Form = () => {
 
     const addNos = () => {
         var p = [...nos];
-        p.push({ name: '', description: '', pc: '' });
+        p.push({ name: '', description: '', elements: [], elements_no: 0 });
+        setNos(p);
+    }
+
+    const addElement = (index, size) => {
+        var p = [...nos];
+        var elements = [];
+        if (size > 0) {
+            for (let i = 0; i < size; i++) {
+                elements.push({ name: `${p[index].name}-${i + 1}`, pc: 0 });
+            }
+        }
+        p[index].elements = elements;
         setNos(p);
     }
 
@@ -42,9 +58,22 @@ const Form = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleNosChange = (e, k, i) => {
+    const handleNosChange = (e, k, i, k2, i2) => {
         let p = [...nos];
-        p[i][k] = e.target.value;
+        if (k === "elements") {
+            let el = [...p[i].elements];
+            el[i2][k2] = e.target.value;
+            p[i].elements = el;
+        } else {
+            p[i][k] = e.target.value;
+        }
+        if (k === 'name' && e.target.value === '') {
+            addElement(i, 0);
+            p[i]['elements_no'] = 0;
+        }
+        if (k === 'elements_no') {
+            addElement(i, Number(e.target.value) || 0);
+        }
         setNos(p);
     };
 
@@ -91,7 +120,7 @@ const Form = () => {
                                 options={sectors}
                                 className="w-full"
                                 getOptionLabel={(option) => option ? option.name : ''}
-                                renderInput={(params) => <TextField {...params} variant="standard" label="Sector" />}
+                                renderInput={(params) => <TextField {...params} label="Sector" />}
                                 renderOption={(props, option) => (
                                     <Box component="li" {...props}>
                                         {option.name}
@@ -107,7 +136,6 @@ const Form = () => {
                                 name="name"
                                 label="Name"
                                 fullWidth
-                                variant="standard"
                                 value={form?.name || ''}
                                 onChange={handleChange}
                             />
@@ -118,7 +146,6 @@ const Form = () => {
                                 name="code"
                                 label="Code"
                                 fullWidth
-                                variant="standard"
                                 value={form?.code || ''}
                                 onChange={handleChange}
                             />
@@ -129,7 +156,6 @@ const Form = () => {
                                 name="level"
                                 label="Level"
                                 fullWidth
-                                variant="standard"
                                 value={form?.level || ''}
                                 onChange={handleChange}
                             />
@@ -140,7 +166,6 @@ const Form = () => {
                                 name="duration"
                                 label="Duration"
                                 fullWidth
-                                variant="standard"
                                 value={form?.duration || ''}
                                 onChange={handleChange}
                             />
@@ -149,7 +174,7 @@ const Form = () => {
                 </Box>
                 <Box className='mb-4'>
                     {nos?.length > 0 && nos?.map((n, idx) => (
-                        <Box className='relative mt-4' key={idx} sx={{ p: 2 }} component="fieldset" variant="standard" style={{ borderColor: '#ccc', borderWidth: 1.5 }}>
+                        <Box className='relative mt-4' key={idx} sx={{ p: 2 }} component="fieldset" style={{ borderColor: '#ccc', borderWidth: 1.5 }}>
                             <FormLabel component="legend">Nos {idx + 1}</FormLabel>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={4}>
@@ -157,7 +182,7 @@ const Form = () => {
                                         name="nos[name][]"
                                         label="Nos ID"
                                         fullWidth
-                                        variant="standard"
+
                                         value={n.name || ''}
                                         onChange={(e) => handleNosChange(e, 'name', idx)}
                                     />
@@ -167,21 +192,45 @@ const Form = () => {
                                         name="nos[description][]"
                                         label="Nos Description"
                                         fullWidth
-                                        variant="standard"
+
                                         value={n.description || ''}
                                         onChange={(e) => handleNosChange(e, 'description', idx)}
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={4}>
                                     <TextField
-                                        name="nos[pc][]"
-                                        label="PC"
+                                        type={'number'}
+                                        name="nos[elements_no][]"
+                                        label="No of elements"
                                         fullWidth
-                                        variant="standard"
-                                        value={n.pc || ''}
-                                        onChange={(e) => handleNosChange(e, 'pc', idx)}
+
+                                        value={n.elements_no || ''}
+                                        disabled={n.name === ''}
+                                        onChange={(e) => handleNosChange(e, 'elements_no', idx)}
                                     />
                                 </Grid>
+                                {n.elements_no > 0 && <Grid item xs={12} md={12}>
+                                    {n.elements.map((el, ei) => <Grid key={ei} container spacing={2} className="justify-end">
+                                        <Grid item xs={12} md={4} mb={2}>
+                                            <TextField size='small'
+                                                name={`nos[elements][${ei}][name]`}
+                                                label="Element Name"
+                                                fullWidth
+                                                value={el.name || ''}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4} mb={2}>
+                                            <TextField
+                                                size='small'
+                                                name={`nos[elements][${ei}][pc]`}
+                                                label="PC"
+                                                fullWidth
+                                                value={el.pc || ''}
+                                                onChange={(e) => handleNosChange(e, 'elements', idx, 'pc', ei)}
+                                            />
+                                        </Grid>
+                                    </Grid>)}
+                                </Grid>}
                             </Grid>
                         </Box>
                     ))}

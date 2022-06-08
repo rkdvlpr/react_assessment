@@ -52,6 +52,7 @@ const Form = () => {
         jobrole: '',
         type: 'mcq',
         nos: '',
+        element: '',
         pc: '',
         difficulty_level: '',
         language: [],
@@ -105,18 +106,22 @@ const Form = () => {
 
     const handleChangeName = (v, name, reason = null) => {
         if (name === 'sector') {
-            setForm({ ...form, [name]: v, jobrole: '', nos: '' });
+            setForm({ ...form, [name]: v, jobrole: '', nos: '', element: '', pc: '' });
             setJobrole([]);
             setNos([]);
             if (v?._id) {
                 http.get(`/api/sector/jobrole/${v?._id}`).then((res) => setJobrole(res.data));
             }
         } else if (name === 'jobrole') {
-            setForm({ ...form, [name]: v, nos: '' });
+            setForm({ ...form, [name]: v, nos: '', element: '', pc: '' });
             setNos([]);
             if (v?._id) {
                 http.get(`/api/jobrole/nos/${v?._id}`).then((res) => setNos(res.data));
             }
+        } else if (name === 'nos') {
+            setForm({ ...form, [name]: v, element: '', pc: '' });
+        } else if (name === 'element') {
+            setForm({ ...form, [name]: v, pc: '' });
         } else if (name === 'language') {
             let d = [...form.question];
             for (const q of v) {
@@ -159,8 +164,19 @@ const Form = () => {
         data.set('sector', form?.sector?._id);
         data.set('jobrole', form?.jobrole?._id);
         data.set('nos', form?.nos?._id);
+        data.set('element', form?.element?._id);
         data.set('language', form?.language?.map((v) => v._id));
-        data.set('question', JSON.stringify(form.question));
+        for (let index = 0; index < form.question.length; index++) {
+            const q = form.question[index];
+            data.set(`question[${index}][lang]`, q.lang);
+            data.set(`question[${index}][content]`, q.content);
+            data.set(`question[${index}][description]`, q.description);
+            for (let index1 = 0; index1 < q.options.length; index1++) {
+                const o = q.options[index1];
+                data.set(`question[${index}][options][${index1}][content]`, o.content);
+            }
+        }
+        // data.set('question', JSON.stringify(form.question));
         if (form?._id) {
             http.put(`/api/question/${form?._id}`, data).then((res) => {
                 dispatch(OPEN_SNACKBAR({ message: 'Question Update Successfully.' }));
@@ -231,7 +247,25 @@ const Form = () => {
                                         {option.name}
                                     </Box>
                                 )}
-                                onChange={(e, v) => setForm({ ...form, nos: v })}
+                                onChange={(e, v) => handleChangeName(v, 'nos')}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={4} mb={3}>
+                            <Autocomplete
+                                id="element"
+                                required
+                                value={form.element}
+                                options={form?.nos?.elements || []}
+                                className="w-full"
+                                getOptionLabel={(option) => option ? option.name : ''}
+                                isOptionEqualToValue={(option, value) => option._id === value._id}
+                                renderInput={(params) => <TextField {...params} label="Elements" />}
+                                renderOption={(props, option) => (
+                                    <Box component="li" {...props}>
+                                        {option.name}
+                                    </Box>
+                                )}
+                                onChange={(e, v) => handleChangeName(v || '', 'element')}
                             />
                         </Grid>
                         <Grid item xs={12} md={4} mb={3}>
@@ -241,14 +275,14 @@ const Form = () => {
                                     labelId="pc"
                                     id="pc"
                                     name="pc"
-                                    value={form?.pc}
+                                    value={form.pc}
                                     onChange={(e) => setForm({ ...form, pc: e.target.value })}
                                     label="PC"
                                 >
                                     <MenuItem value="">
                                         <em>None</em>
                                     </MenuItem>
-                                    {(form.nos !== '' && Object.keys(form.nos).length > 0) && [...Array(form?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
+                                    {(form?.element !== '' && Object.keys(form.element).length > 0) && [...Array(form?.element?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -320,7 +354,7 @@ const Form = () => {
                                     <Grid item xs={12} md={12} mb={3}>
                                         <TextField
                                             id={`description-${q.lang}`}
-                                            name={`question[${qi}][description]`}
+                                            // name={`question[${qi}][description]`}
                                             label={`${getLanguageTitle(q.lang)} Question Description`}
                                             fullWidth
                                             multiline
@@ -334,7 +368,7 @@ const Form = () => {
                                             <Grid item xs={12} md={9} mb={3}>
                                                 <TextField
                                                     id={`question-${q.lang}`}
-                                                    name={`question[${qi}][lang]`}
+                                                    // name={`question[${qi}][lang]`}
                                                     label={`${getLanguageTitle(q.lang)} Question`}
                                                     fullWidth
                                                     multiline
@@ -353,7 +387,7 @@ const Form = () => {
                                             <Grid item xs={12} md={9} mb={3}>
                                                 <TextField
                                                     id={`options-${q.lang}`}
-                                                    name={`question[${qi}][options][${oi}][content]`}
+                                                    // name={`question[${qi}][options][${oi}][content]`}
                                                     label={`${getLanguageTitle(q.lang)} Option ${oi + 1}`}
                                                     fullWidth
                                                     multiline

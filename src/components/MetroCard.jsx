@@ -9,6 +9,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import TranslateIcon from '@mui/icons-material/Translate';
 import LayersIcon from '@mui/icons-material/Layers';
 import QuizIcon from '@mui/icons-material/Quiz';
+import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 
 const getIcons = (key) => {
     if (key === 'state') {
@@ -50,6 +51,10 @@ const getIcons = (key) => {
     } else if (key === 'question') {
         return <Avatar sx={{ backgroundColor: 'warning.main', height: 56, width: 56 }}>
             <QuizIcon />
+        </Avatar>
+    } else if (key === 'strategy') {
+        return <Avatar sx={{ backgroundColor: 'info.main', height: 56, width: 56 }}>
+            <EmojiObjectsIcon />
         </Avatar>
     } else {
         return null;

@@ -27,9 +27,9 @@ const Form = () => {
         pass_percentage: "",
         strategy: { mcq: [], viva: [], demo: [] }
     });
-    const [mcqForm, setMcqForm] = React.useState({ nos: '', pc: '', questions: '', level: '' });
-    const [vivaForm, setVivaForm] = React.useState({ nos: '', pc: '', questions: '', level: '' });
-    const [demoForm, setDemoForm] = React.useState({ nos: '', pc: '', questions: '', level: '' });
+    const [mcqForm, setMcqForm] = React.useState({ nos: '', element: '', pc: '', questions: '', level: '' });
+    const [vivaForm, setVivaForm] = React.useState({ nos: '', element: '', pc: '', questions: '', level: '' });
+    const [demoForm, setDemoForm] = React.useState({ nos: '', element: '', pc: '', questions: '', level: '' });
     const [jobroles, setJobrole] = React.useState([]);
     const [maxQuestion, setMaxQuestion] = React.useState({ mcq: 0, viva: 0, demo: 0 });
 
@@ -55,18 +55,18 @@ const Form = () => {
 
     const getQuestionCount = (type, data) => {
         if (type === "mcq") {
-            if (data.nos && data.pc && data.level) {
-                http.post('/api/strategy/question-count', { type: "mcq", nos: data.nos._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, mcq: res.data.count }));
+            if (data.nos && data.element && data.pc && data.level) {
+                http.post('/api/strategy/question-count', { type: "mcq", nos: data.nos._id, element: data.element._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, mcq: res.data.count }));
             }
         }
         if (type === "viva") {
-            if (data.nos && data.pc && data.level) {
-                http.post('/api/strategy/question-count', { type: "viva", nos: data.nos._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, viva: res.data.count }));
+            if (data.nos && data.element && data.pc && data.level) {
+                http.post('/api/strategy/question-count', { type: "viva", nos: data.nos._id, element: data.element._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, viva: res.data.count }));
             }
         }
         if (type === "demo") {
-            if (data.nos && data.pc && data.level) {
-                http.post('/api/strategy/question-count', { type: "demo", nos: data.nos._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, demo: res.data.count }));
+            if (data.nos && data.element && data.pc && data.level) {
+                http.post('/api/strategy/question-count', { type: "demo", nos: data.nos._id, element: data.element._id, pc: data.pc, difficulty_level: data.level._id }).then((res) => setMaxQuestion({ ...maxQuestion, demo: res.data.count }));
             }
         }
     }
@@ -99,20 +99,20 @@ const Form = () => {
     const addStartegy = (type) => {
         if (type === 'mcq') {
             let strategy = { ...form.strategy };
-            strategy[type].push({ nos: mcqForm.nos, pc: mcqForm.pc, questions: [...Array(mcqForm.questions).fill(1)], difficulty_level: mcqForm.level });
-            setMcqForm({ nos: '', pc: '', level: '', questions: '' });
+            strategy[type].push({ nos: mcqForm.nos, element: mcqForm.element, pc: mcqForm.pc, questions: [...Array(mcqForm.questions).fill(0)], difficulty_level: mcqForm.level });
+            setMcqForm({ nos: '', element: '', pc: '', level: '', questions: '' });
             setForm({ ...form, strategy: strategy });
         }
         if (type === 'viva') {
             let strategy = { ...form.strategy };
-            strategy[type].push({ nos: vivaForm.nos, pc: vivaForm.pc, questions: [...Array(vivaForm.questions).fill(1)], difficulty_level: vivaForm.level });
-            setVivaForm({ nos: '', pc: '', level: '', questions: '' });
+            strategy[type].push({ nos: vivaForm.nos, element: vivaForm.element, pc: vivaForm.pc, questions: [...Array(vivaForm.questions).fill(0)], difficulty_level: vivaForm.level });
+            setVivaForm({ nos: '', element: '', pc: '', level: '', questions: '' });
             setForm({ ...form, strategy: strategy });
         }
         if (type === 'demo') {
             let strategy = { ...form.strategy };
-            strategy[type].push({ nos: demoForm.nos, pc: demoForm.pc, questions: [...Array(demoForm.questions).fill(1)], difficulty_level: demoForm.level });
-            setDemoForm({ nos: '', pc: '', level: '', questions: '' });
+            strategy[type].push({ nos: demoForm.nos, element: demoForm.element, pc: demoForm.pc, questions: [...Array(demoForm.questions).fill(0)], difficulty_level: demoForm.level });
+            setDemoForm({ nos: '', element: '', pc: '', level: '', questions: '' });
             setForm({ ...form, strategy: strategy });
         }
     };
@@ -145,6 +145,14 @@ const Form = () => {
                 }
                 return 0;
             }).reduce((a, b) => Number(a) + Number(b), 0);
+        }
+        return '0';
+    };
+
+    const nosQMarks = (type, index) => {
+        if (form.strategy[type].length > 0) {
+            var v = form.strategy[type][index];
+            return v.questions.reduce((a, b) => Number(a) + Number(b), 0);
         }
         return '0';
     };
@@ -205,7 +213,7 @@ const Form = () => {
         for (let index = 0; index < Object.keys(strategy).length; index++) {
             const key = Object.keys(strategy)[index];
             for (let index1 = 0; index1 < strategy[key].length; index1++) {
-                strategy[key][index1] = { nos: strategy[key][index1].nos._id, pc: strategy[key][index1].pc, difficulty_level: strategy[key][index1].difficulty_level._id, questions: strategy[key][index1].questions };
+                strategy[key][index1] = { nos: strategy[key][index1].nos._id, element: strategy[key][index1].element._id, pc: strategy[key][index1].pc, difficulty_level: strategy[key][index1].difficulty_level._id, questions: strategy[key][index1].questions };
             }
         }
         data['strategy'] = strategy;
@@ -229,6 +237,7 @@ const Form = () => {
         setPreviewStatus(status);
         setPreview({});
     };
+
     const enablePreview = () => {
         var strategy = { ...form.strategy };
         let status = true;
@@ -240,9 +249,10 @@ const Form = () => {
         }
         return status;
     };
+
     return <React.Fragment>
         <Paper className='p-5'>
-            <Typography>{id ? 'Edit' : 'Add'} Question</Typography>
+            <Typography>{id ? 'Edit' : 'Add'} Strategy</Typography>
             <Box className='mt-5' component="form" onSubmit={onSubmit} noValidate autoComplete="off">
                 <Box className='mb-4'>
                     <Grid container spacing={2}>
@@ -338,7 +348,7 @@ const Form = () => {
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Grid container spacing={2}>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="mcq_nos" style={{ fontSize: 12 }}>NOS ID</InputLabel>
                                                 <Select
@@ -357,6 +367,25 @@ const Form = () => {
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} md={2} mb={3}>
+                                            <Autocomplete
+                                                id="mcq_element"
+                                                required
+                                                size='small'
+                                                value={mcqForm.element}
+                                                options={mcqForm?.nos?.elements || []}
+                                                className="w-full"
+                                                getOptionLabel={(option) => option ? option.name : ''}
+                                                isOptionEqualToValue={(option, value) => option._id === value._id}
+                                                renderInput={(params) => <TextField {...params} label="Elements" />}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props}>
+                                                        {option.name}
+                                                    </Box>
+                                                )}
+                                                onChange={(e, v) => changeNosPcLevel("mcq", "element", v || '')}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="mcq_pc" style={{ fontSize: 12 }}>PC</InputLabel>
                                                 <Select
@@ -370,11 +399,11 @@ const Form = () => {
                                                     <MenuItem value="">
                                                         <em>None</em>
                                                     </MenuItem>
-                                                    {(mcqForm.nos !== '' && Object.keys(mcqForm.nos).length > 0) && [...Array(mcqForm?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
+                                                    {(mcqForm.element !== '' && Object.keys(mcqForm.element).length > 0) && [...Array(mcqForm?.element?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="mcq_difficulty_level" style={{ fontSize: 12 }}>Difficulty Level</InputLabel>
                                                 <Select
@@ -420,8 +449,10 @@ const Form = () => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>NOS</TableCell>
+                                                <TableCell>Element</TableCell>
                                                 <TableCell>PC</TableCell>
                                                 <TableCell>Score/Questions</TableCell>
+                                                <TableCell>Marks</TableCell>
                                                 <TableCell>Difficulty Level</TableCell>
                                                 <TableCell>Action</TableCell>
                                             </TableRow>
@@ -435,10 +466,12 @@ const Form = () => {
                                                     <TableCell component="th" scope="row">
                                                         {row.nos.name}
                                                     </TableCell>
+                                                    <TableCell>{row.element.name}</TableCell>
                                                     <TableCell>{row.pc}</TableCell>
                                                     <TableCell>
                                                         {row.questions.length > 0 && row.questions.map((q, qi) => <input key={qi} value={q} onChange={(e) => changeQuestionMarks('mcq', ri, qi, e.target.value)} style={{ border: '1px solid #ccc', margin: '2px', width: 40 }} />)}
                                                     </TableCell>
+                                                    <TableCell>{nosQMarks('mcq', ri)}</TableCell>
                                                     <TableCell>{row.difficulty_level.name}</TableCell>
                                                     <TableCell>
                                                         <IconButton color='error' aria-label="delete" onClick={() => removeStrategy("mcq", ri)}>
@@ -463,7 +496,7 @@ const Form = () => {
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Grid container spacing={2}>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="viva_nos" style={{ fontSize: 12 }}>NOS ID</InputLabel>
                                                 <Select
@@ -482,6 +515,25 @@ const Form = () => {
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} md={2} mb={3}>
+                                            <Autocomplete
+                                                id="viva_element"
+                                                required
+                                                size='small'
+                                                value={vivaForm.element}
+                                                options={vivaForm?.nos?.elements || []}
+                                                className="w-full"
+                                                getOptionLabel={(option) => option ? option.name : ''}
+                                                isOptionEqualToValue={(option, value) => option._id === value._id}
+                                                renderInput={(params) => <TextField {...params} label="Elements" />}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props}>
+                                                        {option.name}
+                                                    </Box>
+                                                )}
+                                                onChange={(e, v) => changeNosPcLevel("viva", "element", v || '')}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="viva_pc" style={{ fontSize: 12 }}>PC</InputLabel>
                                                 <Select
@@ -495,11 +547,11 @@ const Form = () => {
                                                     <MenuItem value="">
                                                         <em>None</em>
                                                     </MenuItem>
-                                                    {(vivaForm.nos !== '' && Object.keys(vivaForm.nos).length > 0) && [...Array(vivaForm?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
+                                                    {(vivaForm.element !== '' && Object.keys(vivaForm.element).length > 0) && [...Array(vivaForm?.element?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="viva_difficulty_level" style={{ fontSize: 12 }}>Difficulty Level</InputLabel>
                                                 <Select
@@ -545,8 +597,10 @@ const Form = () => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>NOS</TableCell>
+                                                <TableCell>Element</TableCell>
                                                 <TableCell>PC</TableCell>
                                                 <TableCell>Score/Questions</TableCell>
+                                                <TableCell>Marks</TableCell>
                                                 <TableCell>Difficulty Level</TableCell>
                                                 <TableCell>Action</TableCell>
                                             </TableRow>
@@ -560,10 +614,12 @@ const Form = () => {
                                                     <TableCell component="th" scope="row">
                                                         {row.nos.name}
                                                     </TableCell>
+                                                    <TableCell>{row.element.name}</TableCell>
                                                     <TableCell>{row.pc}</TableCell>
                                                     <TableCell>
                                                         {row.questions.length > 0 && row.questions.map((q, qi) => <input key={qi} value={q} onChange={(e) => changeQuestionMarks('viva', ri, qi, e.target.value)} style={{ border: '1px solid #ccc', margin: '2px', width: 40 }} />)}
                                                     </TableCell>
+                                                    <TableCell>{nosQMarks('viva', ri)}</TableCell>
                                                     <TableCell>{row.difficulty_level.name}</TableCell>
                                                     <TableCell>
                                                         <IconButton color='error' aria-label="delete" onClick={() => removeStrategy("viva", ri)}>
@@ -588,7 +644,7 @@ const Form = () => {
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Grid container spacing={2}>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="demo_nos" style={{ fontSize: 12 }}>NOS ID</InputLabel>
                                                 <Select
@@ -607,6 +663,25 @@ const Form = () => {
                                             </FormControl>
                                         </Grid>
                                         <Grid item xs={12} md={2} mb={3}>
+                                            <Autocomplete
+                                                id="demo_element"
+                                                required
+                                                size='small'
+                                                value={demoForm.element}
+                                                options={demoForm?.nos?.elements || []}
+                                                className="w-full"
+                                                getOptionLabel={(option) => option ? option.name : ''}
+                                                isOptionEqualToValue={(option, value) => option._id === value._id}
+                                                renderInput={(params) => <TextField {...params} label="Elements" />}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props}>
+                                                        {option.name}
+                                                    </Box>
+                                                )}
+                                                onChange={(e, v) => changeNosPcLevel("demo", "element", v || '')}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="demo_pc" style={{ fontSize: 12 }}>PC</InputLabel>
                                                 <Select
@@ -620,11 +695,11 @@ const Form = () => {
                                                     <MenuItem value="">
                                                         <em>None</em>
                                                     </MenuItem>
-                                                    {(demoForm.nos !== '' && Object.keys(demoForm.nos).length > 0) && [...Array(demoForm?.nos?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
+                                                    {(demoForm.element !== '' && Object.keys(demoForm.element).length > 0) && [...Array(demoForm?.element?.pc)].map((v, idx) => <MenuItem key={idx} value={idx + 1}>{idx + 1}</MenuItem>)}
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={12} md={3} mb={3}>
+                                        <Grid item xs={12} md={2} mb={3}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="demo_difficulty_level" style={{ fontSize: 12 }}>Difficulty Level</InputLabel>
                                                 <Select
@@ -670,8 +745,10 @@ const Form = () => {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>NOS</TableCell>
+                                                <TableCell>Element</TableCell>
                                                 <TableCell>PC</TableCell>
                                                 <TableCell>Score/Questions</TableCell>
+                                                <TableCell>Marks</TableCell>
                                                 <TableCell>Difficulty Level</TableCell>
                                                 <TableCell>Action</TableCell>
                                             </TableRow>
@@ -685,10 +762,12 @@ const Form = () => {
                                                     <TableCell component="th" scope="row">
                                                         {row.nos.name}
                                                     </TableCell>
+                                                    <TableCell>{row.element.name}</TableCell>
                                                     <TableCell>{row.pc}</TableCell>
                                                     <TableCell>
                                                         {row.questions.length > 0 && row.questions.map((q, qi) => <input key={qi} value={q} onChange={(e) => changeQuestionMarks('demo', ri, qi, e.target.value)} style={{ border: '1px solid #ccc', margin: '2px', width: 40 }} />)}
                                                     </TableCell>
+                                                    <TableCell>{nosQMarks('demo', ri)}</TableCell>
                                                     <TableCell>{row.difficulty_level.name}</TableCell>
                                                     <TableCell>
                                                         <IconButton color='error' aria-label="delete" onClick={() => removeStrategy("demo", ri)}>
