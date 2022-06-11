@@ -52,7 +52,7 @@ const getIcons = (key) => {
         return <Avatar sx={{ backgroundColor: 'warning.main', height: 56, width: 56 }}>
             <QuizIcon />
         </Avatar>
-    } else if (key === 'strategy') {
+    } else if (key === 'strategy' || key === 'sets') {
         return <Avatar sx={{ backgroundColor: 'info.main', height: 56, width: 56 }}>
             <EmojiObjectsIcon />
         </Avatar>

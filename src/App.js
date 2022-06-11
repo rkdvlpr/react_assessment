@@ -126,7 +126,7 @@ function App() {
             <Route path="/strategy" element={<Strategy />} />
             <Route path="/strategy/add" element={<StrategyForm />} />
             <Route path="/strategy/:id/edit" element={<StrategyForm />} />
-            <Route path="/strategy/:id/generate" element={<StrategyGenerateForm />} />
+            <Route path="/strategy/:id/generate/:set_id" element={<StrategyGenerateForm />} />
             <Route path="/strategy/:id/detail" element={<StrategyDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/blank" element={<Blank />} />

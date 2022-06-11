@@ -72,7 +72,11 @@ const Form = () => {
     }, [dispatch]);
 
     const getLanguage = React.useCallback(() => {
-        http.get(`/api/language`).then((res) => dispatch(SET_LANGUAGE(res.data)));
+        http.get(`/api/language`).then((res) => {
+            dispatch(SET_LANGUAGE(res.data));
+            var englag = res.data.find(v => v.slug === 'eng');
+            handleChangeName([englag], 'language');
+        });
     }, [dispatch]);
 
     const getQuestion = React.useCallback(() => {

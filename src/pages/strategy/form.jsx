@@ -4,7 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import http from "../../utils/http";
-import { OPEN_SNACKBAR } from '../../store/common';
+import { OPEN_SNACKBAR, SET_LANGUAGE } from '../../store/common';
 import { SET_SECTOR } from '../../store/sector';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -12,6 +12,7 @@ const Form = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const sectors = useSelector(state => state.sector.sectors);
+    const languages = useSelector(state => state.common.language);
     const [preview, setPreview] = React.useState({});
     const [preview_status, setPreviewStatus] = React.useState(false);
     const [expanded, setExpanded] = React.useState(false);
@@ -37,6 +38,10 @@ const Form = () => {
         http.get('/api/sector').then((res) => dispatch(SET_SECTOR(res.data)));
     }, [dispatch]);
 
+    const getLanguage = React.useCallback(() => {
+        http.get(`/api/language`).then((res) => dispatch(SET_LANGUAGE(res.data)));
+    }, [dispatch]);
+
     const getStrategy = React.useCallback(() => {
         if (id) {
             http.get(`/api/strategy/${id}`).then((res) => setForm({ ...res.data, difficulty_level: res.data?.difficulty_level?._id }));
@@ -51,7 +56,8 @@ const Form = () => {
         getSectors();
         getLevels();
         getStrategy();
-    }, [getSectors, getLevels, getStrategy]);
+        getLanguage();
+    }, [getSectors, getLevels, getStrategy, getLanguage]);
 
     const getQuestionCount = (type, data) => {
         if (type === "mcq") {
@@ -195,9 +201,9 @@ const Form = () => {
         setForm({ ...form, strategy: strategy });
     };
 
-    const onPreview = () => {
+    const onPreview = (language = []) => {
         let strategy = { ...form.strategy };
-        http.post(`/api/strategy/preview`, { strategy: strategy }).then((res) => {
+        http.post(`/api/strategy/preview`, { strategy: strategy, language: language }).then((res) => {
             setPreview(res.data);
         })
     };
@@ -789,7 +795,33 @@ const Form = () => {
             </Box>
         </Paper>
         <Dialog open={Object.keys(preview).length > 0} onClose={handleClose} fullWidth={true} maxWidth={'md'}>
-            <DialogTitle>Question Availability</DialogTitle>
+            <DialogTitle>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={4} mb={3}>
+                        Question Availability
+                    </Grid>
+                    <Grid item xs={12} md={8} mb={3}>
+                        <Autocomplete
+                            id="language"
+                            multiple
+                            required
+                            size="small"
+                            options={languages}
+                            className="w-full"
+                            disableClearable
+                            getOptionLabel={(option) => option ? option.name : ''}
+                            isOptionEqualToValue={(option, value) => option._id === value._id}
+                            renderInput={(params) => <TextField {...params} label="Language" />}
+                            renderOption={(props, option) => (
+                                <Box component="li" {...props}>
+                                    {option.name}
+                                </Box>
+                            )}
+                            onChange={(e, v, r) => onPreview(v)}
+                        />
+                    </Grid>
+                </Grid>
+            </DialogTitle>
             <DialogContent>
                 {Object.keys(preview).length > 0 && Object.keys(preview).map((type, ti) =>
                     <div key={ti}>
@@ -799,7 +831,11 @@ const Form = () => {
                                 <Grid container spacing={2} key={i}>
                                     <Grid item xs={1} md={1} mb={2}>{i + 1}.</Grid>
                                     <Grid item xs={6} md={6} mb={2}>{v.nos.name}</Grid>
-                                    <Grid item xs={5} md={5} mb={2}>{v.questions.length <= v.maxCount ? "Available" : "Not Available"}</Grid>
+                                    <Grid item xs={5} md={5} mb={2}>
+                                        {Object.keys(v.count).length > 0 && Object.keys(v.count).map((k, ki) =>
+                                            <div key={ki}>{k} : {v.questions.length <= v.count[k] ? "Available" : "Not Available"}</div>
+                                        )}
+                                    </Grid>
                                 </Grid>
                             )}
                         </div>

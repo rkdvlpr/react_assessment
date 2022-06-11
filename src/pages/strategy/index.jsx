@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tooltip, Button, IconButton, Box, Hidden, Dialog, DialogTitle, DialogActions, DialogContent, Grid, TextField } from '@mui/material';
+import { Tooltip, Button, IconButton, Box, Hidden, Dialog, DialogTitle, DialogActions, DialogContent, Grid, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -15,7 +15,6 @@ const Strategy = () => {
     const items = useSelector(state => state.strategy.items);
     const [sets, setSets] = React.useState({});
     const [generate_set, setGenerateSet] = React.useState('');
-    const [generateForm, setGenerateForm] = React.useState({ name: '', number: '' });
 
     const getStrategy = React.useCallback(() => {
         http.get('/api/strategy').then((res) => dispatch(SET_STRATEGY(res.data)));
@@ -34,7 +33,7 @@ const Strategy = () => {
                 accessor: "_id",
                 disableSortBy: true,
                 Cell: ({ row }) => {
-                    return (<Box>
+                    return (<Box className='flex'>
                         <IconButton onClick={() => navigate(`/strategy/${row.original?._id}/edit`)} aria-label="edit" color="primary">
                             <EditIcon />
                         </IconButton>
@@ -68,8 +67,8 @@ const Strategy = () => {
         {
             Header: 'Assessment Sets', id: "sets", accessor: 'pass_percentage',
             Cell: ({ row }) => {
-                return (<Button onClick={() => setSets({ ...row.original, strategy_set: [{ name: "Set 1", _id: "1" }, { name: "Set 2", _id: "2" }] })} aria-label="sets" color="primary">
-                    2
+                return (<Button onClick={() => setSets(row.original)} aria-label="sets" color="primary">
+                    {row.original?.sets?.length || '0'}
                 </Button>)
             }
         }
@@ -81,14 +80,12 @@ const Strategy = () => {
         setSets({});
     };
 
-    const closeGenerateDialog = () => {
-        setGenerateSet('');
-    };
-
-    const submitGenerate = () => {
-        sessionStorage.setItem('generateSet', JSON.stringify(generateForm));
-        navigate(`/strategy/${generate_set}/generate`);
-        closeGenerateDialog();
+    const submitGenerate = (id) => {
+        setGenerateSet(id);
+        http.post(`/api/strategy/generate-set/${id}`).then((res) => {
+            setGenerateSet('');
+            navigate(`/strategy/${id}/generate/${res.data.sets[res.data.sets.length - 1]._id}`);
+        });
     };
 
     return <React.Fragment>
@@ -111,55 +108,35 @@ const Strategy = () => {
         >
             <DialogTitle>Assessment Set Detail</DialogTitle>
             <DialogContent>
-                {(Object.keys(sets).length > 0 && sets.strategy_set.length > 0) && sets.strategy_set.map((s, si) => <Grid container spacing={2} key={si} style={{ borderBottom: '1px solid #ccc' }}>
-                    <Grid item xs={6} md={6}>{si + 1}.</Grid>
-                    <Grid item xs={6} md={6}>{s.name}</Grid>
+                {(Object.keys(sets).length > 0 && sets.sets.length > 0) && sets.sets.map((s, si) => <Grid container spacing={2} key={si} style={{ borderBottom: '1px solid #ccc' }}>
+                    <Grid item xs={5} md={5}>{si + 1}.</Grid>
+                    <Grid item xs={5} md={5}>{s.name}</Grid>
+                    <Grid item xs={2} md={2}>
+                        <IconButton onClick={() => navigate(`/strategy/${sets._id}/generate/${s._id}`)} aria-label="view" color="info">
+                            <VisibilityIcon />
+                        </IconButton>
+                    </Grid>
                 </Grid>)}
             </DialogContent>
             <DialogActions>
                 <Button onClick={closeSetDialog}>Cancel</Button>
                 <Button color='success' onClick={() => {
                     closeSetDialog();
-                    setGenerateSet(sets._id)
+                    submitGenerate(sets._id)
                 }}>Generate</Button>
             </DialogActions>
         </Dialog>
         <Dialog
             fullWidth={true}
-            maxWidth={'sm'}
+            maxWidth={'xs'}
             open={generate_set !== ""}
-            onClose={closeGenerateDialog}
         >
-            <DialogTitle>Generate New Sets</DialogTitle>
+            <DialogTitle>Generating Sets...</DialogTitle>
             <DialogContent>
-                <Grid container spacing={2} style={{ marginTop: 5 }}>
-                    <Grid item xs={12}>
-                        <TextField
-                            id="name"
-                            name="name"
-                            label="Set Name"
-                            fullWidth
-                            value={generateForm?.name || ''}
-                            onChange={(e) => setGenerateForm({ ...generateForm, name: e.target.value })}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            id="number"
-                            name="number"
-                            type="number"
-                            label="No. Of Set Generate"
-                            fullWidth
-                            value={generateForm?.number || ''}
-                            onChange={(e) => setGenerateForm({ ...generateForm, number: e.target.value })}
-                        />
-                    </Grid>
-                </Grid>
+                <Box className='flex justify-center'>
+                    <CircularProgress />
+                </Box>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={closeGenerateDialog}>Cancel</Button>
-                <Button disabled={generateForm.name === '' || generateForm.number === ''} color='success' onClick={() => submitGenerate()}>Submit</Button>
-            </DialogActions>
         </Dialog>
     </React.Fragment>
 }
