@@ -224,8 +224,6 @@ const Form = () => {
         }
         data['strategy'] = strategy;
 
-        console.log(data);
-
         if (form?._id) {
             http.put(`/api/strategy/${form?._id}`, data).then((res) => {
                 dispatch(OPEN_SNACKBAR({ message: 'Strategy Update Successfully.' }));

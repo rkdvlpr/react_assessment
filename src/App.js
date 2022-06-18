@@ -43,6 +43,8 @@ import Strategy from "./pages/strategy";
 import StrategyForm from "./pages/strategy/form";
 import StrategyGenerateForm from "./pages/strategy/generate";
 import StrategyDetail from "./pages/strategy/detail";
+import Assessment from "./pages/assessment";
+import AssessmentForm from "./pages/assessment/form";
 import Blank from "./pages/blank";
 
 const token = localStorage.getItem("token");
@@ -128,6 +130,9 @@ function App() {
             <Route path="/strategy/:id/edit" element={<StrategyForm />} />
             <Route path="/strategy/:id/generate/:set_id" element={<StrategyGenerateForm />} />
             <Route path="/strategy/:id/detail" element={<StrategyDetail />} />
+            <Route path="/assessment" element={<Assessment />} />
+            <Route path="/assessment/add" element={<AssessmentForm />} />
+            <Route path="/assessment/:id/edit" element={<AssessmentForm />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/blank" element={<Blank />} />
             <Route path="*" element={<NotFound />} />

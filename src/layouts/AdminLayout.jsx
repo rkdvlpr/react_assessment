@@ -111,6 +111,7 @@ const AdminLayout = () => {
             "/question/import": "Import Question",
             "/question/add": "Add New Question",
             "/strategy/add": "Add New Strategy",
+            "/assessment/add": "Add New Assessment",
         };
         if (routelist[location.pathname])
             return routelist[location.pathname];
@@ -136,6 +137,8 @@ const AdminLayout = () => {
             return 'Generate Assessment Sets';
         if (/(\/strategy\/+[a-zA-Z0-9]+\/detail)/gm.test(location.pathname))
             return 'Strategy Detail';
+        if (/(\/assessment\/+[a-zA-Z0-9]+\/edit)/gm.test(location.pathname))
+            return 'Edit Assessment';
         let str = location.pathname.replace(/^\/+/, '');
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
@@ -204,7 +207,7 @@ const AdminLayout = () => {
                     </IconButton>
                 </Toolbar>
                 <Divider />
-                <List component="nav" className='overflow-y-auto' style={{maxHeight:'calc(100vh - 65px)'}}>
+                <List component="nav" className='overflow-y-auto' style={{ maxHeight: 'calc(100vh - 65px)' }}>
                     {SidebarMenu}
                 </List>
             </Drawer>

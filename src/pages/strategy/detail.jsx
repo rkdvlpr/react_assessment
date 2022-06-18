@@ -1,13 +1,18 @@
 import * as React from 'react';
-import { Paper, Grid, Typography, Table, TableBody, TableHead, TableRow, TableCell } from '@mui/material';
+import { Paper, Grid, Typography, Table, TableBody, TableHead, TableRow, TableCell, Autocomplete, Box, TextField } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { red } from '@mui/material/colors';
 import http from "../../utils/http";
+import { SET_LANGUAGE } from '../../store/common';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const StrategyDetail = () => {
     const { id } = useParams();
+    const dispatch = useDispatch();
+    const languages = useSelector(state => state.common.language);
     const [item, setItem] = React.useState({});
     const [strategy, setStrategy] = React.useState({});
 
@@ -20,9 +25,14 @@ const StrategyDetail = () => {
         }
     }, [id]);
 
+    const getLanguage = React.useCallback(() => {
+        http.get(`/api/language`).then((res) => dispatch(SET_LANGUAGE(res.data)));
+    }, [dispatch]);
+
     React.useEffect(() => {
+        getLanguage();
         getStrategy();
-    }, [getStrategy]);
+    }, [getLanguage, getStrategy]);
 
     const nosQMarks = (type, index) => {
         if (strategy[type].length > 0) {
@@ -30,6 +40,12 @@ const StrategyDetail = () => {
             return v.questions.reduce((a, b) => Number(a) + Number(b), 0);
         }
         return '0';
+    };
+
+    const onPreview = (language = []) => {
+        http.post(`/api/strategy/preview`, { language: language, id: id }).then((res) => {
+            setStrategy(res.data);
+        })
     };
 
     return <React.Fragment>
@@ -52,6 +68,26 @@ const StrategyDetail = () => {
                 </Grid>
                 <Grid item xs={12} md={4} mb={3}>
                     <p><b>Passing %</b>: {item?.pass_percentage}</p>
+                </Grid>
+                <Grid item xs={12} md={4} mb={3}>
+                    <Autocomplete
+                        id="language"
+                        multiple
+                        required
+                        size="small"
+                        options={languages}
+                        className="w-full"
+                        disableClearable
+                        getOptionLabel={(option) => option ? option.name : ''}
+                        isOptionEqualToValue={(option, value) => option._id === value._id}
+                        renderInput={(params) => <TextField {...params} label="Language" />}
+                        renderOption={(props, option) => (
+                            <Box component="li" {...props}>
+                                {option.name}
+                            </Box>
+                        )}
+                        onChange={(e, v, r) => onPreview(v)}
+                    />
                 </Grid>
             </Grid>
         </Paper>
@@ -77,8 +113,12 @@ const StrategyDetail = () => {
                                     <TableCell>{mcq.element.name}</TableCell>
                                     <TableCell>{mcq.pc}</TableCell>
                                     <TableCell>{mcq.difficulty_level.name}</TableCell>
-                                    <TableCell>{mcq.questions.length}/{nosQMarks('mcq',mcqi)}</TableCell>
-                                    <TableCell>{mcq.questions.length <= mcq.maxCount ? <CheckCircleIcon color='success' /> : <CancelIcon sx={{ color: red[500] }} />}</TableCell>
+                                    <TableCell>{mcq.questions.length}/{nosQMarks('mcq', mcqi)}</TableCell>
+                                    <TableCell>
+                                        {Object.keys(mcq.count).length > 0 && Object.keys(mcq.count).map((k, ki) =>
+                                            <div key={ki}>{k} : {mcq.questions.length <= mcq.count[k] ? <CheckCircleIcon color='success' /> : <CancelIcon sx={{ color: red[500] }} />}</div>
+                                        )}
+                                    </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

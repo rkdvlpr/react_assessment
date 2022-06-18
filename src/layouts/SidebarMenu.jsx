@@ -17,6 +17,7 @@ import TranslateIcon from '@mui/icons-material/Translate';
 import LayersIcon from '@mui/icons-material/Layers';
 import QuizIcon from '@mui/icons-material/Quiz';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
+import NewspaperIcon from '@mui/icons-material/Newspaper';
 
 function ListItemLink(props) {
   const { icon, primary, to } = props;
@@ -62,5 +63,6 @@ export const SidebarMenu = (
     <ListItemLink to="/assessor" primary="Assessor" icon={<GroupIcon />} />
     <ListItemLink to="/question" primary="Questions" icon={<QuizIcon />} />
     <ListItemLink to="/strategy" primary="Strategy" icon={<EmojiObjectsIcon />} />
+    <ListItemLink to="/assessment" primary="Assessment" icon={<NewspaperIcon />} />
   </React.Fragment>
 );

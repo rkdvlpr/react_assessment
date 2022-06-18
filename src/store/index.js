@@ -5,6 +5,7 @@ import usersReducer from './users'
 import sectorReducer from './sector'
 import questionReducer from './question'
 import strategyReducer from './strategy'
+import assessmentReducer from './assessment'
 
 export default configureStore({
     reducer: {
@@ -13,6 +14,7 @@ export default configureStore({
         users: usersReducer,
         sector: sectorReducer,
         question: questionReducer,
-        strategy: strategyReducer
+        strategy: strategyReducer,
+        assessment: assessmentReducer
     }
 })
