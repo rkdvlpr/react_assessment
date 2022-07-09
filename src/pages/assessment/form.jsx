@@ -29,8 +29,8 @@ const Form = () => {
         name: '',
         start_date: '',
         end_date: '',
-        mcq_language: [],
-        viva_language: '',
+        // mcq_language: [],
+        // viva_language: '',
         type: ''
     });
 
@@ -99,8 +99,8 @@ const Form = () => {
         data['name'] = form.name;
         data['start_date'] = form.start_date;
         data['end_date'] = form.end_date;
-        data['mcq_language'] = form.mcq_language.map(v => v._id);
-        data['viva_language'] = form.viva_language._id;
+        // data['mcq_language'] = form.mcq_language.map(v => v._id);
+        // data['viva_language'] = form.viva_language._id;
         data['type'] = form.type;
         if (form?._id) {
             http.put(`/api/assessment/${form?._id}`, data).then((res) => {
@@ -287,7 +287,7 @@ const Form = () => {
                                     />
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={12} md={4} mb={3}>
+                            {/* <Grid item xs={12} md={4} mb={3}>
                                 <Autocomplete
                                     id="mcq_language"
                                     multiple
@@ -325,7 +325,7 @@ const Form = () => {
                                     )}
                                     onChange={(e, v, r) => handleChangeName(v, 'viva_language', r)}
                                 />
-                            </Grid>
+                            </Grid> */}
                         </Grid>
                     </Box>
                     <Box className='mb-4 flex justify-end'>
