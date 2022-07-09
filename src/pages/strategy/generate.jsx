@@ -44,7 +44,19 @@ const GenerateForm = () => {
 
     return <React.Fragment>
         <Paper className='p-5'>
-            <Typography><b>Strategy: </b>{strategy.name}</Typography>
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                    <Typography><b>Strategy: </b>{strategy.name}</Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Typography><b>Set Name: </b>{strategy.sets?.name}</Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Typography><b>Set Language: </b>{strategy.sets?.languages?.map(v => {
+                        return (v.slug === 'eng') ? v.name : `${v.name} (${v.eng_name})`
+                    })?.join(", ")}</Typography>
+                </Grid>
+            </Grid>
         </Paper>
         {Object.keys(sets).length > 0 && Object.keys(sets).map((type, si) => <Card key={si} className='mt-5'>
             <CardContent>

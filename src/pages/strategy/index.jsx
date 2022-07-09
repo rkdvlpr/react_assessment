@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tooltip, Button, IconButton, Box, Hidden, Dialog, DialogTitle, DialogActions, DialogContent, Grid, CircularProgress } from '@mui/material';
+import { Tooltip, Button, IconButton, Box, Hidden, Dialog, DialogTitle, DialogActions, DialogContent, Grid, CircularProgress, Autocomplete, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -8,11 +8,15 @@ import { SET_STRATEGY } from '../../store/strategy';
 import TableComponent from '../../components/TableComponent';
 import http from "../../utils/http";
 import { useNavigate } from 'react-router-dom';
+import { SET_LANGUAGE } from '../../store/common';
 
 const Strategy = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const items = useSelector(state => state.strategy.items);
+    const languages = useSelector(state => state.common.language);
+    const [genStatus, setGenStatus] = React.useState(false);
+    const [lang, setLang] = React.useState("");
     const [sets, setSets] = React.useState({});
     const [generate_set, setGenerateSet] = React.useState('');
 
@@ -20,9 +24,14 @@ const Strategy = () => {
         http.get('/api/strategy').then((res) => dispatch(SET_STRATEGY(res.data)));
     }, [dispatch]);
 
+    const getLanguage = React.useCallback(() => {
+        http.get(`/api/language`).then((res) => dispatch(SET_LANGUAGE(res.data)));
+    }, [dispatch]);
+
     React.useEffect(() => {
-        getStrategy()
-    }, [getStrategy]);
+        getStrategy();
+        getLanguage();
+    }, [getStrategy, getLanguage]);
 
     const tableHooks = (hooks) => {
         hooks.visibleColumns.push((columns) => [
@@ -80,11 +89,21 @@ const Strategy = () => {
         setSets({});
     };
 
-    const submitGenerate = (id) => {
+    const openGenerateDialog = (id) => {
         setGenerateSet(id);
-        http.post(`/api/strategy/generate-set/${id}`).then((res) => {
+    };
+
+    const submitGenerate = () => {
+        setGenStatus(true);
+        var d = {};
+        if (lang !== '') {
+            d['language'] = lang;
+        }
+        http.post(`/api/strategy/generate-set/${generate_set}`, d).then((res) => {
             setGenerateSet('');
-            navigate(`/strategy/${id}/generate/${res.data.sets[res.data.sets.length - 1]._id}`);
+            navigate(`/strategy/${generate_set}/generate/${res.data.sets[res.data.sets.length - 1]._id}`);
+        }).catch((error) => {
+            setGenStatus(false);
         });
     };
 
@@ -122,7 +141,7 @@ const Strategy = () => {
                 <Button onClick={closeSetDialog}>Cancel</Button>
                 <Button color='success' onClick={() => {
                     closeSetDialog();
-                    submitGenerate(sets._id)
+                    openGenerateDialog(sets._id)
                 }}>Generate</Button>
             </DialogActions>
         </Dialog>
@@ -133,9 +152,35 @@ const Strategy = () => {
         >
             <DialogTitle>Generating Sets...</DialogTitle>
             <DialogContent>
-                <Box className='flex justify-center'>
-                    <CircularProgress />
-                </Box>
+                {!genStatus ? <Grid container spacing={2}>
+                    <Grid item xs={12} md={12} mb={3}>
+                        <Box component={'small'}>Default question language is <b>ENGLISH</b>, here you can select second language as <b>Regional Language</b>.</Box>
+                    </Grid>
+                    <Grid item xs={12} md={7} mb={3}>
+                        <Autocomplete
+                            id="language"
+                            size="small"
+                            options={languages.filter(v => v.slug !== 'eng')}
+                            className="w-full"
+                            disableClearable
+                            getOptionLabel={(option) => option ? `${option.name} (${option.eng_name})` : ''}
+                            renderInput={(params) => <TextField {...params} label="Language" />}
+                            renderOption={(props, option) => (
+                                <Box component="li" {...props}>
+                                    {option.name} ({option.eng_name})
+                                </Box>
+                            )}
+                            onChange={(e, v, r) => setLang(v._id || '')}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={5} mb={3}>
+                        <Button onClick={() => submitGenerate()}>Submit</Button>
+                        <Button color='error' onClick={() => setGenerateSet('')}>Cancel</Button>
+                    </Grid>
+                </Grid> :
+                    <Box className='flex justify-center'>
+                        <CircularProgress />
+                    </Box>}
             </DialogContent>
         </Dialog>
     </React.Fragment>
